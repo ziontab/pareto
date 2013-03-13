@@ -29,8 +29,8 @@ class Calculation(models.Model):
 class Estimation(models.Model):
     project     = models.ForeignKey(Project)
     problem     = models.ForeignKey(Problem)
-    calculation = models.ForeignKey(Calculation)
-    calculation = models.ForeignKey(Calculation)
+    calc_1      = models.ForeignKey(Calculation, null=True, related_name='calc_1')
+    calc_2      = models.ForeignKey(Calculation, null=True, related_name='calc_2')
     name        = models.CharField(max_length=255)
     time        = models.IntegerField(default=0)
     date        = models.DateTimeField('date executed')
