@@ -8,6 +8,9 @@ urlpatterns = patterns('',
     # Examples:
     # url(r'^$', 'pareto.views.home', name='home'),
     # url(r'^pareto/', include('pareto.foo.urls')),
+    
+    (r'^login/$',    'parapp.views.login'),
+    (r'^register/$', 'parapp.views.register'),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
