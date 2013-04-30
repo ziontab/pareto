@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="center span6">
-    <form name="register" method="POST" class="form-horizontal" action="?" >
+    <form name="register" method="POST" class="form-horizontal" action="" >
         {% csrf_token %}
         {% for error in errors.values %}
             <div class="alert alert-error">

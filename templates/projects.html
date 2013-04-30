@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Проекты</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Название</th>
+            <th>Дата создания</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for project in data.projects %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td><a href="/project/{{ project.id }}/">{{ project.name }}</a></td>
+            <td>{{ project.date }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<div id="js-project-create" class="btn btn-primary">Создать проект</div>
+<script>
+    $('#js-project-create').on('click', function() {
+        alert('clicked');
+        return false;
+    });
+</script>
+
+{% endblock %}

@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 class Project(models.Model):
     user = models.ForeignKey(User)
     name = models.CharField(max_length=255)
-    date = models.DateTimeField('date started')
+    date = models.DateTimeField(auto_now_add=True, blank=True)
 
 class Problem(models.Model):
     name = models.CharField(max_length=255)
