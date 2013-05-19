@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="center span6">
+    <form enctype="multipart/form-data" method="POST" class="form-horizontal" action="">
+        {% csrf_token %}
+        {% for error in errors.values %}
+            <div class="alert alert-error">
+                {{ error }}
+            </div>
+        {% endfor %}
+        <fieldset>
+            <legend>Создание оценки</legend>
+            <div class="control-group {% if errors.name %}error{% endif %}">
+                <label class="control-label" for="Name">Название</label>
+                <div class="controls">
+                    <input type="text" name="name" id="Name" placeholder="Название" value="{{ data.name }}">
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="type">Тип</label>
+                <div class="controls">
+                    <label class="radio">
+                        <input type="radio" name="type" value="1" {% if data.type == 1 %}selected{% endif %}>
+                        Унарный
+                    </label>
+                    <label class="radio">
+                        <input type="radio" name="type" value="2" {% if data.type == 2 %}selected{% endif %}>
+                        Бинарный
+                    </label>
+                </div>
+            </div>
+            <div class="control-group {% if errors.problem %}error{% endif %}">
+                <label class="control-label" for="Problem">Метод оценки</label>
+                <div class="controls">
+                    <select name="problem">
+                        {% for problem in data.problems %}
+                            <option class="{% if problem.is_binary %}binary{% else %}unary{% endif %}" value="{{ problem.id }}">{{ problem.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="input_type">Варианты ввода данных</label>
+                <div class="controls">
+                    <label class="radio">
+                        <input type="radio" name="input_type" value="1" {% if data.input_type == 1 %}selected{% endif %}>
+                        Загрузка файла
+                    </label>
+                    <label class="radio">
+                        <input type="radio" name="input_type" value="2" {% if data.input_type == 2 %}selected{% endif %}>
+                        Выбор из существующих расчетов
+                    </label>
+                </div>
+            </div>
+            <div id="calc_select_1" class="control-group {% if errors.calc_1 %}error{% endif %}">
+                <label class="control-label" for="Calculation1">Расчет 1</label>
+                <div class="controls">
+                    <select name="calc_1">
+                        {% for calculation in data.calculations %}
+                            <option value="{{ calculation.id }}">{{ calculation.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div id="calc_select_2" class="control-group {% if errors.calc_2 %}error{% endif %}">
+                <label class="control-label" for="Calculation2">Расчет 2</label>
+                <div class="controls">
+                    <select name="calc_2">
+                        {% for calculation in data.calculations %}
+                            <option value="{{ calculation.id }}">{{ calculation.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div id="calc_upload_1" class="control-group {% if errors.input_data1 %}error{% endif %}">
+                <label class="control-label" for="inputData1">Первый фронт</label>
+                <div class="controls">
+                    <input type="file" name="input_data1" id="input_data1">
+                </div>
+            </div>
+            <div id="calc_upload_2" class="control-group {% if errors.input_data2 %}error{% endif %}">
+                <label class="control-label" for="inputData2">Второй фронт</label>
+                <div class="controls">
+                    <input type="file" name="input_data2" id="input_data2">
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <button type="submit" class="btn btn-primary">Произвести оценку</button>
+                </div>
+            </div>
+        </fieldset>
+    </form>
+</div>
+<script>
+    var $binary = 0,
+        $unary  = 0;
+    $(document).ready(function() {
+        if (($binary == 0) && ($unary == 0)) {
+            $binary = $("option.binary");
+            $unary  = $("option.unary");
+        }
+        $("input[name='type']").on("change", function() {
+
+            if($("input[name='type']:checked").val() == 1) {
+                $("option.binary").remove();
+                $("option.unary").remove();
+                $("select[name='problem']").append($unary);
+            }
+            else {
+                $("option.binary").remove();
+                $("option.unary").remove();
+                $("select[name='problem']").append($binary);
+            }
+        });
+
+        $("input[name='input_type']").on("change", function() {
+            if($("input[name='input_type']:checked").val() == 1) {
+                $('#calc_select_1').hide();
+                $('#calc_select_2').hide();
+                $('#calc_upload_1').show();
+                $('#calc_upload_2').show();
+            }
+            else {
+                $('#calc_select_1').show();
+                $('#calc_select_2').show();
+                $('#calc_upload_1').hide();
+                $('#calc_upload_2').hide();
+            }
+        });
+        $("input[value='1']").trigger('click');
+    });
+</script>
+{% endblock %}

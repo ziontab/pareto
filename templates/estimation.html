@@ -1,1 +1,50 @@
-{{ data }}
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Оценка {{ data.estimation.name }}</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Название поля</th>
+            <th>Значение поля</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>1</td>
+            <td>Имя</td>
+            <td>{{ data.estimation.name }}</td>
+        </tr>
+    </tbody>
+    <tbody>
+        <tr>
+            <td>2</td>
+            <td>Дата добавления</td>
+            <td>{{ data.estimation.date }}</td>
+        </tr>
+    </tbody>
+    <tbody>
+        <tr>
+            <td>3</td>
+            <td>Время вычислений</td>
+            <td>{{ data.estimation.time }}</td>
+        </tr>
+    </tbody>
+    <tbody>
+        <tr>
+            <td>4</td>
+            <td>Входные данные</td>
+            <td>{{ data.estimation.input_data }}</td>
+        </tr>
+    </tbody>
+    <tbody>
+        <tr>
+            <td>5</td>
+            <td>Выходные данные</td>
+            <td>{{ data.estimation.output_data }}</td>
+        </tr>
+    </tbody>
+</table>
+
+{% endblock %}
