@@ -5,9 +5,11 @@ from django.template.response import TemplateResponse
 from django.contrib.auth import authenticate, login as auth_login
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-from parapp.models import Project, Calculation, Estimation
+from parapp.models import Project, Calculation, Estimation, Problem, Algorithm
 from django.shortcuts import redirect
 
+import subprocess
+import os
 import datetime
 import json
 
@@ -76,7 +78,7 @@ def login(request):
 @login_required
 def create_project(request):
     response_data = {'status': 'fail'}
-    name = request.GET.get('name', 0)
+    name = request.POST.get('name', 0)
     if not name:
         return HttpResponse(json.dumps(response_data), content_type="application/json")
     project = Project(name = name, user = request.user)
@@ -104,7 +106,7 @@ def list_project(request):
     return TemplateResponse(request, 'projects.html', {'errors': errors, 'data': data})
 
 @login_required
-def create_calculation(request):
+def create_calculation(request, project_id):
     html = "<html><body>create_calculation</body></html>"
     return HttpResponse(html)
 
@@ -122,9 +124,79 @@ def get_calculation(request, calculation_id):
     return TemplateResponse(request, 'calculation.html', {'errors': errors, 'data': data})
 
 @login_required
-def create_estimation(request):
-    html = "<html><body>no create_estimation</body></html>"
-    return HttpResponse(html)
+def create_estimation(request, project_id):
+    data, errors = {}, {}
+    try:
+        project = Project.objects.get(user=request.user, pk=project_id)
+    except Project.DoesNotExist:
+        raise Http404
+    data['project']      = project
+    data['problems']     = Problem.objects.all()
+    data['estimations']  = Estimation.objects.filter(project=project)
+    data['calculations'] = Calculation.objects.filter(project=project)
+
+    if request.method == 'GET':
+        return TemplateResponse(request, 'estimation_create.html', {'errors': errors, 'data': data})
+
+    name         = request.POST.get('name', 0)
+    problem_id   = request.POST.get('problem', 0)
+    calc_1       = request.POST.get('calc_1', 0)
+    calc_2       = request.POST.get('calc_2', 0)
+    problem_type = request.POST.get('type', 0)
+    input_type   = request.POST.get('input_type', 0)
+    input_data1  = request.FILES.get('input_data1', 0)
+    input_data2  = request.FILES.get('input_data2', 0)
+
+    if not name:
+        errors['name'] = 'Имя оценки не введено'
+    if not input_type:
+        errors['input_type'] = 'Типа входных данных не определен'
+    elif (input_type == '1') and not input_data1:
+        errors['input_data1'] = 'Входной файл не загружен'
+    elif (input_type == '1') and not input_data2:
+        errors['input_data2'] = 'Входной файл не загружен'
+    elif (input_type == '2') and not (calc_1 and calc_2):
+        errors['calc_1'] = 'Расчеты не выбранны'
+    if not problem_id:
+        errors['problem'] = 'Метод оценки не выбран'
+    else:
+        try:
+            problem = Problem.objects.get(pk=problem_id)
+        except Problem.DoesNotExist:
+            raise Http404
+
+    if errors.keys():
+        data['name']       = name
+        data['type']       = problem_type
+        data['input_type'] = input_type
+        return TemplateResponse(request, 'estimation_create.html', {'errors': errors, 'data': data})
+
+    if (input_type == '1'):
+        result = handle_execution(problem.path, input_data1, input_data2)
+        input_data1.seek(0)
+        input_data2.seek(0)
+        new_est = Estimation(name=name,
+            input_data=input_data1.read() + "//////\n" + input_data2.read(),
+            output_data=result, time='10', project=data['project'],problem=problem)
+        new_est.save()
+        return redirect('/estimation/' + str(new_est.id) + '/')
+    return HttpResponse("<html><body>calculations not handled</body></html>")
+
+
+def handle_execution(path, file_data1, file_data2):
+    tmp_file_name_1 = '/tmp/buff1.txt'
+    tmp_file_name_2 = '/tmp/buff2.txt'
+    for file_struct in [ [tmp_file_name_1, file_data1], [tmp_file_name_2, file_data2]]:
+        destination = open(file_struct[0], 'wb')
+        for chunk in file_struct[1].chunks():
+            destination.write(chunk)
+        destination.close()
+
+    args = (path, tmp_file_name_1, tmp_file_name_2 , "2", "4")
+    popen = subprocess.Popen(args, stdout=subprocess.PIPE)
+    popen.wait()
+    output = popen.stdout.read()
+    return output
 
 @login_required
 def get_estimation(request, estimation_id):
