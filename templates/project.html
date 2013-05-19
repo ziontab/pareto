@@ -27,7 +27,7 @@
                 {% endfor %}
                 </tbody>
             </table>
-            <a href="/calculation/create/" class="btn btn-primary">Создать расчет</a>
+            <a href="/calculation/create/{{ data.project.id }}/" class="btn btn-primary">Создать расчет</a>
         </div>
         <div id="estimation" class="tab-pane fade">
             <table class="table">
@@ -48,7 +48,7 @@
                 {% endfor %}
                 </tbody>
             </table>
-            <a href="/estimation/create/" class="btn btn-primary">Создать оценку</a>
+            <a href="/estimation/create/{{ data.project.id }}/" class="btn btn-primary">Создать оценку</a>
         </div>
     </div>
 </div>

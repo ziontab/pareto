@@ -20,12 +20,30 @@
     {% endfor %}
     </tbody>
 </table>
-<div id="js-project-create" class="btn btn-primary">Создать проект</div>
+<a href="#prjectCreateModal" role="button" class="btn btn-primary" data-toggle="modal">Создать проект</a>
+<!-- Modal -->
+<div id="prjectCreateModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="prjectCreateModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="prjectCreateModalLabel">Создание проекта</h3>
+    </div>
+    <div class="modal-body">
+        <p>One fine body…</p>
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Закрыть</button>
+        <button id="js-create-submit" class="btn btn-primary">Создать</button>
+    </div>
+</div>
+
 <script>
-    $('#js-project-create').on('click', function() {
-        alert('clicked');
-        return false;
+    $('#js-create-submit').on('click', function () {
+        $.post("/ajax/project/create/", { name: "2pm" })
+            .done(function(data) {
+            alert("Data Loaded: " + data);
+        });
     });
+
 </script>
 
 {% endblock %}
