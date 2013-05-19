@@ -7,12 +7,16 @@ urlpatterns = patterns('',
     # User accounts
     url(r'^$',          'parapp.views.get_main'),
     url(r'^login/$',    'parapp.views.login'),
+    url(r'^logout/$',   'parapp.views.logout'),
     url(r'^register/$', 'parapp.views.register'),
     
     # Projects
-    url(r'^projects/$',                    'parapp.views.list_project'),
-    url(r'^project/(?P<project_id>\d+)/$', 'parapp.views.get_project'),
-    url(r'^ajax/project/create/$',         'parapp.views.create_project'),
+    url(r'^projects/$',                          'parapp.views.list_project'),
+    url(r'^project/(?P<project_id>\d+)/$',       'parapp.views.get_project'),
+    url(r'^ajax/addproject/$',                   'parapp.views.create_project'),
+    url(r'^editproject/(?P<project_id>\d+)/$',   'parapp.views.edit_project'),
+    url(r'^deleteproject/(?P<project_id>\d+)/$', 'parapp.views.delete_project'),
+    url(r'^searchproject/$',                     'parapp.views.search_project'),
 
     # Calculations
     url(r'^calculation/(?P<calculation_id>\d+)/$',    'parapp.views.get_calculation'),

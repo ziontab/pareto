@@ -1,49 +1,162 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Проекты</h2>
-<table class="table">
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>Название</th>
-            <th>Дата создания</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for project in data.projects %}
-        <tr>
-            <td>{{ forloop.counter }}</td>
-            <td><a href="/project/{{ project.id }}/">{{ project.name }}</a></td>
-            <td>{{ project.date }}</td>
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
-<a href="#prjectCreateModal" role="button" class="btn btn-primary" data-toggle="modal">Создать проект</a>
-<!-- Modal -->
-<div id="prjectCreateModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="prjectCreateModalLabel" aria-hidden="true">
-    <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h3 id="prjectCreateModalLabel">Создание проекта</h3>
+<div class="row">
+    <div >
+        <p><h2 class="text-center"> Проекты </h2></p>
     </div>
-    <div class="modal-body">
-        <p>One fine body…</p>
+    <div style="margin: 0 auto; display: table;">
+    <table style="margin-bottom: 5px;" class="table table-hover table table-condensed span8" >
+        <thead>
+            <tr rowspan="4">
+                <div class="" style="margin: 0px 0px 10px 0px;">
+        <form action="/searchproject/" method="POST" class="navbar-search pull-left">{% csrf_token %}
+            <input type="text" class="search-query" name="search_q" placeholder="Найти проект по имени">
+        </form>
     </div>
-    <div class="modal-footer">
-        <button class="btn" data-dismiss="modal" aria-hidden="true">Закрыть</button>
-        <button id="js-create-submit" class="btn btn-primary">Создать</button>
-    </div>
+            </tr>    
+            <tr>
+                <th ><p>#</p></th>
+                <th ><p>Имя</p></th>
+                <th ><p>Последнее изменение</p></th>
+                <th ><p class="text-center">Управление</p></th>
+            </tr>
+        </thead>
+        <tbody>
+
+            {% for string in data.object_list %}
+            <tr>
+                <td class="span1">
+                    {{  data.start_index|add:forloop.counter|add:"-1" }}          
+                </td>
+                <td class="span4"><a id="projName_{{ forloop.counter }}" href="/project/{{ string.id }}/">{{ string.name }}</a></td>
+                <script type="text/javascript">
+                    checkLength("{{ string.name }}","{{ forloop.counter }}");
+                </script>
+                <td class="span4">{{ string.date }}</td>
+                <td class="span1">
+                        <div class="btn-group mini-btn">
+                            <button  class="btn btn-small "  onclick="document.location.href = '/editproject/{{string.id}}/';" >
+                                Изменить
+                            </button>
+                            <button class="btn btn-small " type="button" onclick='delProject({{string.id}},function(){ return "{{ string.name|escapejs }}"; } )'>
+                                    Удалить
+                            </button>
+                        </div>
+                </td>
+            </tr>
+            {% endfor %}
+
+            <form action="/deleteproject/" method="POST" id="del_proj" >{% csrf_token %}
+                <input type="hidden"></input>
+            </form>
+
+             <div id="editingProject" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="editingProjectLabel" aria-hidden="true">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                                        <h3 id="editingProjectLabel">Изменить</h3>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form action="/ajax/" method="POST" id="edit_proj" name="cpdata" class="navbar-form pull-left">{% csrf_token %}
+                                            <p>
+                                                <h4>Название проекта:&nbsp;&nbsp;&nbsp;&nbsp;
+                                                <input type="text" id="editproject" class="span3" 
+                                                 placeholder="Project Name" onKeyPress="return OnEnterButton(event,this.id)"></h4>
+                                            </p>
+                                            <div>
+                                                <h4>
+                                                <span3>Описание:&nbsp;&nbsp;&nbsp;</span3>
+                                                <textarea rows="3" class="span3" name="descr" placeholder="What's  this project about?"></textarea></h4>
+                                            </div>
+                                            <button  type="button"  class="btn btn-primary pull-right"  onclick="checkInput('editproject')" >Сохранить</button>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button class="btn" data-dismiss="modal" aria-hidden="true">Закрыть</button>
+                                    </div>
+                                </div>
+    </table>
 </div>
+</div>                                   
+                                 <!-- ProjectsListing END -->
 
-<script>
-    $('#js-create-submit').on('click', function () {
-        $.post("/ajax/project/create/", { name: "2pm" })
-            .done(function(data) {
-            alert("Data Loaded: " + data);
-        });
-    });
 
-</script>
+                                    <!-- AddProject Begin -->
+    <div class="row">                                
+        <div class="span8 offset2 ">
+            <a href="#addingProject" role="button" class="btn btn-large btn-block btn-primary" data-toggle="modal" onclick="setProjName()">+ Создать проект</a>
+
+                                            <!-- Modal -->
+            <div id="addingProject" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="addingProjectLabel" aria-hidden="true">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3 id="addingProjectLabel">Новый проект</h3>
+                </div>
+                <div class="modal-body">
+                    <form action="/ajax/" method="POST" id="create_proj" name="npdata" class="navbar-form offset1">{% csrf_token %}
+                        <p>
+                            <h4>Название проекта:</h4>
+                            <input type="text" id="addproject" name="proj_name" class="span3"  placeholder="Project Name"  onKeyPress="return OnEnterButton(event,this.id)" >
+                        </p>
+                    
+                        <div>
+                            <h4>Описание:</h4>
+                            <textarea rows="3" class="span3" name="descr" placeholder="What's this project about?"></textarea>
+                        </div>
+                        
+                        <div>
+                        <button id="crt_button"  type="button"  class="btn btn-primary pull-right" onclick="checkInput('addproject')"  >Создать</button>
+                        </div>
+                        
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" data-dismiss="modal" aria-hidden="true">Закрыть</button>
+                    <!--<button class="btn" aria-hidden="true">Create</button>-->
+                </div>
+            </div>
+        </div>
+    </div>
+                                <!-- AddProject END -->
+
+
+                                    <!-- Paginator Begin -->
+
+
+<div class="pagination pagination-centered">
+        <ul>
+            
+            {% if not data.has_previous %}
+            <li class="disabled">
+                <a>Назад</a>
+            {% else %}
+            <li>
+                <a href="?page={{ data.previous_page_number }}">Назад</a>
+            {% endif %}
+            </li>
+            {% for num in num_pages %}
+                {% if num == data.number %}
+                <li class="active">
+                    <a href="?page={{ num }}">{{ num }}</a>
+                </li>
+                {% else %}
+                <li>
+                    <a href="?page={{ num }}">{{ num }}</a>
+                </li>
+                {% endif %}
+            {% endfor %} 
+                <li>
+            {% if not data.has_next %}
+            <li class="disabled">
+                <a>Вперед</a>
+            {% else %}
+            <li>
+                <a href="?page={{ data.next_page_number }}">Вперед</a>
+            {% endif %}
+                </li>
+                
+        </ul>
+</div>
+                                <!-- Paginator END -->
 
 {% endblock %}

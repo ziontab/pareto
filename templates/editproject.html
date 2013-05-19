@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div>
+    <h1>Редактирование проекта</h1>
+    <hr>
+</div>
+<div>
+    <h4>Проект: <i>"{{ data.project.name }}"</i></h4>
+    <h4>Описание: <i>"{{ data.project.description }}"</i></h4>
+    <form action='/editproject/{{ data.project.id }}/' method="POST" >{% csrf_token %}
+        <h4>Введите новое имя проекта</h4>
+        <input type="text" class="span3" name="new_name">
+        <h4>Введите новое описание</h3>
+        <textarea rows="3" class="span3" name="new_descr"></textarea>
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+    </form>
+</div>
+{% endblock %}

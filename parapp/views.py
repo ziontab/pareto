@@ -2,9 +2,10 @@
 from django.db import models
 from django.http import Http404, HttpResponse
 from django.template.response import TemplateResponse
-from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from parapp.models import Project, Calculation, Estimation, Problem, Algorithm
 from django.shortcuts import redirect
 
@@ -45,7 +46,12 @@ def register(request):
 
     user = User.objects.create_user(name, email, pass1)
     user.save()
-    return redirect('/projects/')
+    user = authenticate(username=name, password=pass1)
+    if user.is_active:
+        auth_login(request, user)
+        return redirect("/projects/")
+    else:
+        return HttpResponse("<html><body>Everything is BAD</body></html>")
 
 def login(request):
     if request.method == 'GET':
@@ -70,22 +76,44 @@ def login(request):
         else:
             errors['data'] = u'Не верный логин или пароль'
 
+    data['username']=username
+    
     if errors.keys():
         return TemplateResponse(request, 'login.html', {'errors': errors, 'data': data})
     else:
         return redirect('/projects/')
 
+def logout(request):
+    auth_logout(request)
+    return TemplateResponse(request, "logout.html")
+
 @login_required
 def create_project(request):
     response_data = {'status': 'fail'}
-    name = request.POST.get('name', 0)
+    name = request.POST.get('proj_name',0)
+    descript = request.POST.get('descr',0)
     if not name:
         return HttpResponse(json.dumps(response_data), content_type="application/json")
     project = Project(name = name, user = request.user)
     if project:
         response_data['status'] = 'ok'
         project.save()
-    return HttpResponse(json.dumps(response_data), content_type="application/json")
+    return redirect('/projects/')
+
+@login_required
+def edit_project(request, project_id):
+    data = {}
+    try:
+        data['project'] = Project.objects.get(user=request.user, pk=project_id)
+    except Project.DoesNotExist:
+        raise Http404
+    if request.method == 'GET':
+        return TemplateResponse(request,'editproject.html',{'data': data})
+    else:
+        name = request.POST.get('new_name',0)
+        description = request.POST.get('new_descr',0)
+        Project.objects.filter(id=project_id).update(name=name)
+        return redirect('/projects/')
 
 @login_required
 def get_project(request, project_id):
@@ -101,9 +129,43 @@ def get_project(request, project_id):
 
 @login_required
 def list_project(request):
-    data, errors = {}, {}
-    data['projects'] = Project.objects.filter(user=request.user)
-    return TemplateResponse(request, 'projects.html', {'errors': errors, 'data': data})
+    all_projects, errors, data, num_projects = {}, {}, {}, {}
+    #num_paginator = Projects.objects.filter(user=request.user).count()
+    all_projects = Project.objects.filter(user=request.user).order_by("-date")
+
+    paginator = Paginator(all_projects, 8)
+    page = request.GET.get('page')
+
+    try:
+        data = paginator.page(page)
+    except PageNotAnInteger:
+        data = paginator.page(1)
+    except EmptyPage:
+        data = paginator.page(paginator.num_pages)
+
+    return TemplateResponse(request,'projects.html',
+        {'errors': errors, 'data': data, 'num_pages':xrange(1,paginator.num_pages+1)})
+
+
+@login_required
+def delete_project(request, project_id):
+    try:
+        project = Project.objects.get(user=request.user, pk=project_id)
+    except Project.DoesNotExist:
+        raise Http404
+    project.delete()
+    return redirect('/projects/')
+
+@login_required
+def search_project(request):
+    if request.method == 'GET':
+        return redirect('/projects/')
+    else:
+        data, errors,  = {}, {}
+        query = request.POST.get('search_q',0)
+        data = Project.objects.filter(user=request.user,name__icontains=query).order_by("-date")
+        return TemplateResponse(request, 'search_projects.html', {'errors': errors, 'data': data, 'query':query})
+
 
 @login_required
 def create_calculation(request, project_id):
