@@ -91,10 +91,9 @@ def logout(request):
 def create_project(request):
     response_data = {'status': 'fail'}
     name = request.POST.get('proj_name',0)
-    descript = request.POST.get('descr',0)
     if not name:
         return HttpResponse(json.dumps(response_data), content_type="application/json")
-    project = Project(name = name, user = request.user)
+    project = Project(name = name, user = request.user, descr=request.POST.get('descr',0))
     if project:
         response_data['status'] = 'ok'
         project.save()
@@ -110,9 +109,9 @@ def edit_project(request, project_id):
     if request.method == 'GET':
         return TemplateResponse(request,'editproject.html',{'data': data})
     else:
-        name = request.POST.get('new_name',0)
-        description = request.POST.get('new_descr',0)
-        Project.objects.filter(id=project_id).update(name=name)
+        Project.objects.filter(id=project_id).update(
+            name=request.POST.get('new_name',0),
+            descr=request.POST.get('new_descr',0))
         return redirect('/projects/')
 
 @login_required
