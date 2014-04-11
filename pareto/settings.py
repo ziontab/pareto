@@ -1,4 +1,7 @@
 # Django settings for pareto project.
+import os
+
+SETTINGS_PATH = os.path.dirname(os.path.dirname(__file__))
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -70,7 +73,7 @@ STATIC_URL = '/static/'
 
 # Additional locations of static files
 STATICFILES_DIRS = (
-    "/home/matdog/sites/pareto/static/",
+    os.path.join(SETTINGS_PATH, 'static'),
     # Put strings here, like "/home/html/static" or "C:/www/django/static".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
@@ -110,7 +113,8 @@ ROOT_URLCONF = 'pareto.urls'
 WSGI_APPLICATION = 'pareto.wsgi.application'
 
 TEMPLATE_DIRS = (
-    "/home/matdog/sites/pareto/templates"
+    os.path.join(SETTINGS_PATH, 'templates'),
+
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.

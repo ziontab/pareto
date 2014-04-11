@@ -1,0 +1,12 @@
+{% for project in data.projects %}
+    <tr>
+        <td>{{ forloop.counter | add:data.offset }}</td>
+        <td class="js-pr-name"><a href="/project/{{ project.id }}/">{{ project.name }}</a></td>
+        <td class="js-pr-descr" title="{{ project.descr }}">{{ project.descr | truncatechars:20 }}</td>
+        <td>{{ project.date_modified | date:'d-m-Y G:i:s' }}</td>
+        <td>
+            <a href="#" data-pr_id="{{ project.id }}" class="btn js-pr-edit">Изменить</a>
+            <a href="#" data-pr_id="{{ project.id }}" class="btn js-pr-delete">Удалить</a>
+        </td>
+    </tr>
+{% endfor %}

@@ -15,7 +15,7 @@
     <body>
         <div class="navbar">
             <div class="navbar-inner">
-                <a class="brand" href="#">Pareto-Q</a>
+                <a class="brand" href="/">Pareto-Q</a>
                 {% if user.is_authenticated %}
                     <ul class="nav pull-right">
                         <li>
@@ -24,7 +24,9 @@
                                 <span class="caret"></span>
                                  </a>
                                 <ul class="dropdown-menu pull-right" >
+                                {% if 0 %}
                                     <li><a href="/profile/">Профиль</a></li>
+                                {% endif %}
                                     <li><a href="/logout/">Выйти</a></li>
                                 </ul>
                             </div>

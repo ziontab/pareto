@@ -4,7 +4,8 @@ from django.contrib.auth.models import User
 class Project(models.Model):
     user  = models.ForeignKey(User)
     name  = models.CharField(max_length=255)
-    date  = models.DateTimeField(auto_now_add=True, blank=True)
+    date_added    = models.DateTimeField(auto_now_add=True, blank=True)
+    date_modified = models.DateTimeField(auto_now=True, blank=True)
     descr = models.TextField()
     def __unicode__(self):
         return self.name

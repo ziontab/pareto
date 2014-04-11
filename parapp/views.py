@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from parapp.models import Project, Calculation, Estimation, Problem, Algorithm
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 
 import subprocess
 import os
@@ -90,80 +90,70 @@ def logout(request):
 @login_required
 def create_project(request):
     response_data = {'status': 'fail'}
-    name = request.POST.get('proj_name',0)
-    if not name:
-        return HttpResponse(json.dumps(response_data), content_type="application/json")
-    project = Project(name = name, user = request.user, descr=request.POST.get('descr',0))
-    if project:
-        response_data['status'] = 'ok'
-        project.save()
-    return redirect('/projects/')
+    name = request.POST.get('name', 0)
+    if name:
+        project = Project(
+            name  = name,
+            user  = request.user,
+            descr =request.POST.get('descr', 0)
+        )
+        if project:
+            response_data['status'] = 'ok'
+            project.save()
+    return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 @login_required
 def edit_project(request, project_id):
-    data = {}
-    try:
-        data['project'] = Project.objects.get(user=request.user, pk=project_id)
-    except Project.DoesNotExist:
-        raise Http404
-    if request.method == 'GET':
-        return TemplateResponse(request,'editproject.html',{'data': data})
-    else:
-        Project.objects.filter(id=project_id).update(
-            name=request.POST.get('new_name',0),
-            descr=request.POST.get('new_descr',0))
-        return redirect('/projects/')
+    result  = {'status': 'fail'}
+    project = get_object_or_404(Project, user=request.user, pk=project_id)
+    name    = request.POST.get('name')
+    if name:
+        project.name  = request.POST.get('name', 0)
+        project.descr = request.POST.get('descr', 0)
+        project.save()
+        result['status'] = 'ok'
+    return HttpResponse(json.dumps(result), content_type="application/json")
 
 @login_required
 def get_project(request, project_id):
     data, errors = {}, {}
-    try:
-        project = Project.objects.get(user=request.user, pk=project_id)
-    except Project.DoesNotExist:
-        raise Http404
+    project = get_object_or_404(Project, user=request.user, pk=project_id)
     data['project']      = project
     data['estimations']  = Estimation.objects.filter(project=project)
     data['calculations'] = Calculation.objects.filter(project=project)
     return TemplateResponse(request, 'project.html', {'errors': errors, 'data': data})
 
+per_page = 20
 @login_required
 def list_project(request):
     all_projects, errors, data, num_projects = {}, {}, {}, {}
-    #num_paginator = Projects.objects.filter(user=request.user).count()
-    all_projects = Project.objects.filter(user=request.user).order_by("-date")
+    data['projects'] = Project.objects.filter(user=request.user).order_by("-date_added")[:per_page]
+    data['total'] = Project.objects.filter(user=request.user).count()
+    data['offset'] = 0
+    return TemplateResponse(request,'projects.html', {'errors': errors, 'data': data })
 
-    paginator = Paginator(all_projects, 8)
-    page = request.GET.get('page')
-
-    try:
-        data = paginator.page(page)
-    except PageNotAnInteger:
-        data = paginator.page(1)
-    except EmptyPage:
-        data = paginator.page(paginator.num_pages)
-
-    return TemplateResponse(request,'projects.html',
-        {'errors': errors, 'data': data, 'num_pages':xrange(1,paginator.num_pages+1)})
+@login_required
+def list_project_row(request):
+    all_projects, errors, data, num_projects = {}, {}, {}, {}
+    page = int(request.GET.get('page', 1))
+    data['offset']   = (page - 1) * per_page
+    data['projects'] = Project.objects.filter(user=request.user).order_by("-date_added")[data['offset']:data['offset'] + per_page]
+    return TemplateResponse(request,'inc/project_list.html', {'errors': errors, 'data': data })
 
 
 @login_required
 def delete_project(request, project_id):
-    try:
-        project = Project.objects.get(user=request.user, pk=project_id)
-    except Project.DoesNotExist:
-        raise Http404
+    project = get_object_or_404(Project, user=request.user, pk=project_id)
     project.delete()
-    return redirect('/projects/')
+    return HttpResponse(json.dumps({'status': 'ok'}), content_type="application/json")
 
 @login_required
 def search_project(request):
-    if request.method == 'GET':
-        return redirect('/projects/')
-    else:
-        data, errors,  = {}, {}
-        query = request.POST.get('search_q',0)
-        data = Project.objects.filter(user=request.user,name__icontains=query).order_by("-date")
-        return TemplateResponse(request, 'search_projects.html', {'errors': errors, 'data': data, 'query':query})
+    data, errors,  = {}, {}
+    query = request.POST.get('q', 0)
+    data['offset']   = 0
+    data['projects'] = Project.objects.filter(user=request.user, name__icontains=query).order_by("-date_added")
+    return TemplateResponse(request, 'inc/project_list.html', {'errors': errors, 'data': data })
 
 
 @login_required
@@ -187,10 +177,8 @@ def get_calculation(request, calculation_id):
 @login_required
 def create_estimation(request, project_id):
     data, errors = {}, {}
-    try:
-        project = Project.objects.get(user=request.user, pk=project_id)
-    except Project.DoesNotExist:
-        raise Http404
+
+    project = get_object_or_404(Project, user=request.user, pk=project_id)
     data['project']      = project
     data['problems']     = Problem.objects.all()
     data['estimations']  = Estimation.objects.filter(project=project)
@@ -221,10 +209,7 @@ def create_estimation(request, project_id):
     if not problem_id:
         errors['problem'] = 'Метод оценки не выбран'
     else:
-        try:
-            problem = Problem.objects.get(pk=problem_id)
-        except Problem.DoesNotExist:
-            raise Http404
+        problem = get_object_or_404(Problem, pk=problem_id)
 
     if errors.keys():
         data['name']       = name
@@ -262,12 +247,7 @@ def handle_execution(path, file_data1, file_data2):
 @login_required
 def get_estimation(request, estimation_id):
     data, errors = {}, {}
-    try:
-        estimation = Estimation.objects.get(pk=estimation_id)
-        project     = Project.objects.get(pk=estimation.project_id, user=request.user)
-    except Estimation.DoesNotExist:
-        raise Http404
-    except Project.DoesNotExist:
-        raise Http404
+    estimation = get_object_or_404(Estimation, pk=estimation_id)
+    project    = get_object_or_404(Project, pk=estimation.project_id, user=request.user)
     data['estimation'] = estimation
     return TemplateResponse(request, 'estimation.html', {'errors': errors, 'data': data})

@@ -1,59 +1,127 @@
-    function OnEnterButton(evt, inputId)
-    {
-        evt = (evt) ? evt : window.event;
-        var charCode = (evt.which) ? evt.which : evt.keyCode;
-        if(charCode == 13)
-        {
-            checkInput(inputId);
-            return false;
-        }
-    }
+$(document).ready(function() {
 
-    function checkInput(inputId)
-    {
-        if(document.getElementById(inputId).value =='')
-        {
-            alert("Please, insert a Name of project!");
-            return false;
-        }
-        else
-        {
-            editUrl(inputId)
-        }
-    }
+    $(".js-pr-create").on('click', function(){
+        var $popup = $('#createProject');
+        $('.js-clean', $popup).each(function() {
+            $(this).val('');
+        });
+        $popup.modal()
+        return false;
+    });
 
-    function editUrl(inputId)
-    {
-        url = '/ajax/' + inputId + '/';
-        document.getElementById('create_proj').action = url;
-        create_proj.submit();   
-    }
+    $(".js-pr-submit").on('click', function(){
+        $form = $('form#create_form');
+        $.ajax({
+            type: "POST",
+            url: "/ajax/project/create/",
+            data: $form.serialize(),
+            success: function(data) {
+                if (data && data.status == 'ok') {
+                    $("#createProject").modal('hide');
+                    location.reload();
+                }
+                else {
+                    $("input[name='name']", $form).closest('.control-group').addClass("error");
+                }
+           }
+        });
+
+        return false;
+    });
 
 
-    function delProject(proj_id, proj)
-    {
-        if(confirm("Вы уверены, что хотите удалить проект '" + proj() +"'"))
-        {
-            document.getElementById('del_proj').action+= proj_id+'/'
-            del_proj.submit()
-        }
-    }
+    $(".js-pr-delete").on('click', function(){
+        $elem = $(this);
+        $.ajax({
+            type: "GET",
+            url: "/ajax/project/delete/" + $elem.data('pr_id') + "/",
+            success: function(data) {
+                if(data && data.status == 'ok') {
+                   $elem.closest('tr').remove();
+                }
+                else {
+                    $elem.closest('tr').addClass("error");
+                }
+           }
+         });
+        return false;
+    });
 
-    function checkLength(string , numId)
-    {
-        if(string.length >= 35)
-        {
-            document.getElementById('projName_'+ numId).innerHTML = string.substr(0,32) + '...';
-        }
-    }
+    $(".js-pr-edit").on('click', function(){
+        $btn  = $(this);
+        $form = $('form#edit_form');
+        $tr = $btn.closest('tr');
+        $("input[name='name']",  $form).val($(".js-pr-name a", $tr).text());
+        $("textarea[name='descr']", $form).val($(".js-pr-descr", $tr).prop('title'));
+        $(".js-pr-edit-submit").data('pr_id', $btn.data('pr_id'));
+        console.log($(".js-pr-descr", $tr).prop('title'));
+        $('#editProject').modal()
+        return false;
+    });
 
-    function setProjName()
-    {
-        curr_date = new Date();
-        document.getElementById('addproject').value = 'Project_'+ curr_date.getDate()+ '.' + (curr_date.getMonth()+1) + '.' + curr_date.getFullYear() + '_' + curr_date.getHours() + ":" + curr_date.getMinutes() + ':'+ curr_date.getSeconds();
-    }
+    $(".js-pr-edit-submit").on('click', function(){
+        $btn  = $(this);
+        $form = $('form#edit_form');
+        $.ajax({
+            type: "POST",
+            url: "/ajax/project/edit/" + $btn.data('pr_id') +"/",
+            data: $form.serialize(),
+            success: function(data) {
+                if (data && data.status == 'ok') {
+                    $("#editProject").modal('hide');
+                    location.reload();
+                }
+                else {
+                    $("input[name='name']", $form).closest('.control-group').addClass("error");
+                }
+           }
+        });
 
-    function paginator_url(string)
-    {
-        document.getElementById(string).href='';
-    }
+        return false;
+    });
+
+    document.PARETO = {
+        page: 1,
+        per_page: 20,
+        total: parseInt($("#js-total").data("num"))
+    };
+    $(".js-more").on('click', function(){
+        var $btn = $(this);
+        $.ajax({
+            type: "GET",
+            url: "/ajax/project_row/",
+            data: { page: document.PARETO.page + 1 },
+            success: function(data) {
+                if (data) {
+                    $('tbody').append(data);
+                    document.PARETO.page++;
+                    if (document.PARETO.page * document.PARETO.per_page
+                        > document.PARETO.total) {
+                        $btn.hide();
+                    }
+                }
+           }
+        });
+
+        return false;
+    });
+
+    $(".js-search").on('click', function(){
+        var $btn  = $(this);
+        var $form = $btn.closest("form");
+
+        $.ajax({
+            type: "POST",
+            url: "/ajax/project_search/",
+            data: $form.serialize(),
+            success: function(data) {
+                if (data) {
+                    $('tbody').empty().append(data);
+                }
+           }
+        });
+
+        return false;
+    });
+
+});
