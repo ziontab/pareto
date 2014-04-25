@@ -72,9 +72,9 @@ def login(request):
             if user.is_active:
                 auth_login(request, user)
             else:
-                errors['data'] = u'Не верный логин или пароль'
+                errors['data'] = u'Неверный логин или пароль'
         else:
-            errors['data'] = u'Не верный логин или пароль'
+            errors['data'] = u'Неверный логин или пароль'
 
     data['username']=username
     
