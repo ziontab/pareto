@@ -40,6 +40,7 @@
                     </select>
                 </div>
             </div>
+            {% if 0 %}
             <div class="control-group">
                 <label class="control-label" for="input_type">Варианты ввода данных</label>
                 <div class="controls">
@@ -73,6 +74,7 @@
                     </select>
                 </div>
             </div>
+            {% endif %}
             <div id="calc_upload_1" class="control-group {% if errors.input_data1 %}error{% endif %}">
                 <label class="control-label" for="inputData1">Первый фронт</label>
                 <div class="controls">
@@ -114,7 +116,9 @@
                 $("select[name='problem']").append($binary);
             }
         });
+        $("input[value='1']").trigger('click');
 
+        {% if 0 %}
         $("input[name='input_type']").on("change", function() {
             if($("input[name='input_type']:checked").val() == 1) {
                 $('#calc_select_1').hide();
@@ -129,7 +133,7 @@
                 $('#calc_upload_2').hide();
             }
         });
-        $("input[value='1']").trigger('click');
+        {% endif %}
     });
 </script>
 {% endblock %}

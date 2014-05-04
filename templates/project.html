@@ -4,11 +4,13 @@
 <h2>Проект {{ data.project.name }}</h2>
 <div class="project-entities">
     <ul class="nav nav-tabs" id="entTab">
-        <li class="active"><a data-toggle="tab" href="#calculation">Расчет</a></li>
-        <li class=""><a data-toggle="tab" href="#estimation">Оценка</a></li>
+    {% if 0 %}
+        <li class=""><a data-toggle="tab" href="#calculation">Расчет</a></li>
+    {% endif %}
+        <li class="active"><a data-toggle="tab" href="#estimation">Оценка</a></li>
     </ul>
     <div class="tab-content" id="entTabContent">
-        <div id="calculation" class="tab-pane fade active in">
+        <div id="calculation" class="tab-pane fade">
             <table class="table">
                 <thead>
                     <tr>
@@ -22,14 +24,14 @@
                     <tr>
                         <td>{{ forloop.counter }}</td>
                         <td><a href="/calculation/{{ calculation.id }}/">{{ calculation.name }}</a></td>
-                        <td>{{ calculation.date }}</td>
+                        <td>{{ calculation.date | date:'d-m-Y G:i:s' }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>
             </table>
             <a href="/calculation/create/{{ data.project.id }}/" class="btn btn-primary">Создать расчет</a>
         </div>
-        <div id="estimation" class="tab-pane fade">
+        <div id="estimation" class="tab-pane fade active in">
             <table class="table">
                 <thead>
                     <tr>
@@ -43,7 +45,7 @@
                     <tr>
                         <td>{{ forloop.counter }}</td>
                         <td><a href="/estimation/{{ estimation.id }}/">{{ estimation.name }}</a></td>
-                        <td>{{ estimation.date }}</td>
+                        <td>{{ estimation.date | date:'d-m-Y G:i:s' }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>

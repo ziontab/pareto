@@ -19,13 +19,13 @@ urlpatterns = patterns('',
     url(r'^ajax/project_row/$',                        'parapp.views.list_project_row'),
     url(r'^ajax/project_search/$',                     'parapp.views.search_project'),
 
-    # Calculations
-    url(r'^calculation/(?P<calculation_id>\d+)/$',    'parapp.views.get_calculation'),
-    url(r'^calculation/create/(?P<project_id>\d+)/$', 'parapp.views.create_calculation'),
-
     # Estimations
     url(r'^estimation/(?P<estimation_id>\d+)/$',     'parapp.views.get_estimation'),
     url(r'^estimation/create/(?P<project_id>\d+)/$', 'parapp.views.create_estimation'),
+
+    # API
+    url(r'^api_back/$', 'parapp.views.api_back'),
+    url(r'^new_calc/$', 'parapp.views.stub'),
 
     # Admin
     url(r'^admin/', include(admin.site.urls)),
