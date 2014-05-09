@@ -2,49 +2,22 @@
 
 {% block content %}
 <h2>Оценка {{ data.estimation.name }}</h2>
-<table class="table">
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>Название поля</th>
-            <th>Значение поля</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>1</td>
-            <td>Имя</td>
-            <td>{{ data.estimation.name }}</td>
-        </tr>
-    </tbody>
-    <tbody>
-        <tr>
-            <td>2</td>
-            <td>Дата добавления</td>
-            <td>{{ data.estimation.date | date:'d-m-Y G:i:s' }}</td>
-        </tr>
-    </tbody>
-    <tbody>
-        <tr>
-            <td>3</td>
-            <td>Время вычислений</td>
-            <td>{{ data.estimation.time }}</td>
-        </tr>
-    </tbody>
-    <tbody>
-        <tr>
-            <td>4</td>
-            <td>Входные данные</td>
-            <td>{{ data.estimation.input_data }}</td>
-        </tr>
-    </tbody>
-    <tbody>
-        <tr>
-            <td>5</td>
-            <td>Выходные данные</td>
-            <td>{{ data.estimation.output_data }}</td>
-        </tr>
-    </tbody>
-</table>
+
+<div class="info">
+    <div class="js-proc alert" style="display:none;">
+        <strong>Подождите, производится расчет</strong> <img class="loader" src="{{ STATIC_URL }}img/ajax-loader.gif">
+    </div>
+    <div class="js-ok alert alert-success" style="display:none;">
+        <strong>Расчет успешно выполнен</strong>
+    </div>
+
+    <div class="js-wait alert alert-info" style="display:none;">
+        Расчет не выполнялся <strong><a class="js-start-est" href="">запустить расчет</a></strong>
+    </div>
+</div>
+
+<div class="js-est-content">
+    {% include "inc/estimation.html" %}
+</div>
 
 {% endblock %}

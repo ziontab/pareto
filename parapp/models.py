@@ -50,7 +50,7 @@ class Estimation(models.Model):
     name        = models.CharField(max_length=255)
     status      = models.CharField(max_length=4, choices=STATUS, default='data')
     time        = models.IntegerField(default=0)
-    date        = models.DateTimeField(auto_now_add=True, blank=True)
+    date        = models.DateTimeField(auto_now=True, blank=True)
     input_data  = models.TextField()
     output_data = models.TextField()
     def __unicode__(self):

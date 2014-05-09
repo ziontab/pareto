@@ -20,8 +20,9 @@ urlpatterns = patterns('',
     url(r'^ajax/project_search/$',                     'parapp.views.search_project'),
 
     # Estimations
-    url(r'^estimation/(?P<estimation_id>\d+)/$',     'parapp.views.get_estimation'),
-    url(r'^estimation/create/(?P<project_id>\d+)/$', 'parapp.views.create_estimation'),
+    url(r'^estimation/(?P<estimation_id>\d+)/$',      'parapp.views.get_estimation'),
+    url(r'^estimation/create/(?P<project_id>\d+)/$',  'parapp.views.create_estimation'),
+    url(r'^ajax/estimation/(?P<estimation_id>\d+)/$', 'parapp.views.get_estimation'),
 
     # API
     url(r'^api_back/$', 'parapp.views.api_back'),

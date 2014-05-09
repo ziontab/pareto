@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from parapp.models import Project, Calculation, Estimation, Problem, Algorithm
 from django.shortcuts import redirect, get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
 
 import os, sys
 import datetime
@@ -197,12 +198,11 @@ def create_estimation(request, project_id):
     input_data = json.dumps({'file1': data1, 'file2': data2})
     new_est = Estimation(name=name, time='0', project=project, problem=problem,
         status='wait', input_data=input_data, output_data='')
-    api_response = api_req({'id': new_est.id, 'file1': data1, 'file2': data2,
-        'csrfmiddlewaretoken': request.COOKIES['csrftoken']}, {'csrftoken': request.COOKIES['csrftoken']})
-    # send to calc server
+    new_est.save()
+    api_response = api_req({'id': new_est.id, 'data': input_data, 'name': problem.name}, {})
     if api_response and api_response['status'] == 'ok':
         new_est.status = 'proc'
-    new_est.save()
+        new_est.save()
     return redirect('/estimation/' + str(new_est.id) + '/')
 
 @login_required
@@ -211,25 +211,30 @@ def get_estimation(request, estimation_id):
     estimation = get_object_or_404(Estimation, pk=estimation_id)
     project    = get_object_or_404(Project, pk=estimation.project_id, user=request.user)
     data['estimation'] = estimation
+    if request.is_ajax():
+        return TemplateResponse(request, 'inc/estimation.html', {'errors': errors, 'data': data})
     return TemplateResponse(request, 'estimation.html', {'errors': errors, 'data': data})
 
 def api_req(params, cookies):
-    url  = 'http://127.0.0.1:8000/new_calc/'
+    url  = 'http://127.0.0.1:8888/api/'
     try:
-        resp = requests.get(url, data=params, cookies=cookies)
+        resp = requests.post(url, data=params, cookies=cookies)
     except (requests.exceptions.RequestException) as e:
         return False
+    sys.stderr.write(str(resp.status_code))
+    sys.stderr.write(resp.text)
     if resp.status_code != 200:
         return False
-    sys.stderr.write(resp.text)
     return json.loads(resp.text)
 
+
+@csrf_exempt
 def api_back(request):
     data, errors = {}, {}
-    e_id   = request.GET.get('id',     0)
-    data   = request.GET.get('data',   '')
-    status = request.GET.get('status', 'fail')
-    time   = request.GET.get('time',   0)
+    e_id   = request.POST.get('id',     0)
+    data   = request.POST.get('data',   '')
+    status = request.POST.get('status', 'fail')
+    time   = request.POST.get('time',   0)
 
     estimation = get_object_or_404(Estimation, pk=e_id)
     estimation.status      = status
@@ -238,5 +243,6 @@ def api_back(request):
     estimation.save()
     return HttpResponse(json.dumps({'status': 'ok'}), content_type="application/json")
 
+@csrf_exempt
 def stub(request):
     return HttpResponse(json.dumps({'status': 'ok'}), content_type="application/json")

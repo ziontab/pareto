@@ -124,4 +124,66 @@ $(document).ready(function() {
         return false;
     });
 
+    var $ok   = $(".js-ok"),
+        $proc = $(".js-proc"),
+        $wait = $(".js-wait");
+
+    function process () {
+        var $content   = $(".js-est-content"),
+            $container = $(".js-status"),
+            status     = $container.data("status");
+            id         = $container.data("id");
+
+        if (status == "ok") {
+            $proc.hide();
+            $wait.hide();
+            $ok.show();
+            return;
+        }
+        else if (status == "wait") {
+            $wait.show();
+            $proc.hide();
+            $ok.hide();
+            return;
+        }
+        else if (status == "proc") {
+            $proc.show();
+            $ok.hide();
+            $wait.hide();
+            window.setTimeout(function () {
+                $.ajax({
+                    type: "GET",
+                    url: "/ajax/estimation/"+ id + "/",
+                    success: function(data) {
+                        if (data) {
+                            $content.empty().append(data);
+                            process();
+                        }
+                   }
+                })
+            }, 10000);
+        }
+        else if (status == "fail") {
+            // show restart btn
+        }
+    };
+    process();
+
+    $(".js-start-est").on('click', function(){
+        $container = $(".js-status"),
+        id         = $container.data("id");
+
+        $.ajax({
+            type: "POST",
+            url: "/ajax/estimation_start/" + id + "/",
+            success: function(data) {
+                if (data && data.status == "ok") {
+                    process()
+                }
+           }
+        });
+
+        return false;
+    });
+
 });
