@@ -1,7 +1,8 @@
 module('lib.command', package.seeall)
 
-local http  = require "resty.http"
-local utils = require "lib.utils"
+local http   = require "resty.http"
+local utils  = require "lib.utils"
+local config = require "lib.config"
 
 function get_from_api(self, key)
     if key == "hv" then
@@ -61,7 +62,7 @@ function set_result(self, calc_id, result, time)
         time   = time,
     }
     local ok, code, headers, status, body  = hc:request {
-        url     = "http://127.0.0.1:8000/api_back/",
+        url     = config.api_url,
         timeout = 3000,
         method  = "POST",
         headers = { ["Content-Type"] = "application/x-www-form-urlencoded" },
