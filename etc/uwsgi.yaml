@@ -1,0 +1,25 @@
+uwsgi:
+    # указываем socket, при помощи которого будет происходить
+    # взаимодействие между nginx и uwsgi
+    socket: /var/tmp/pareto_uwsgi.sock
+    # здесь указываем путь к django-проекту
+    pythonpath: /home/sites/pareto
+    # устанавливаем переменную окружения, которая хранит имя settings файла
+    env: DJANGO_SETTINGS_MODULE=pareto.settings
+    # это имя модуля, который будет запускаться на выполнение
+    # в такой постановке, будет запускаться wsgi.py из директории
+    # указанной выше в 'pythonpath'
+    module: pareto.wsgi:application
+    # путь к лог файлу
+    daemonize: /home/sites/logs/uwsgi.log
+    # прочие настройки, значения который можно посмотреть на сайте uWSGI
+    max-requests: 5000
+    buffer-size: 4096
+    harakiri: 30
+    reload-mercy: 8
+    master: 1
+    no-orphans: 1
+    workers: 5
+    # если выполнить команду "touch <имя ниже указанного файла>",
+    # то произойдет перезапуск uwsgi демона.
+    touch-reload: /home/sites/uwsgi
