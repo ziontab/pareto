@@ -72,7 +72,7 @@ local function timer_handler(premature, type, name, data, id)
     cmd:set_result(type, id, result, time)
 end
 
-local ok, err = ngx.timer.at(0, timer_handler, args["type"],
+local ok, err = ngx.timer.at(1, timer_handler, args["type"],
                                 args["name"], args["data"], args["id"])
 if not ok then
     ngx.log(ngx.ERR, "failed to create timer: ", err)
