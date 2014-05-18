@@ -1,0 +1,53 @@
+server {
+    listen 80;
+    server_name   ziontab.net www.ziontab.net;
+    location / {
+        proxy_pass http://localhost:8080/;
+    }
+    location /static/ {
+        root /home/sites/pareto;
+    }
+
+    location /static/admin/ {
+        root /usr/local/lib/python2.7/dist-packages/django/contrib/admin/;
+    }
+}
+
+server {
+    listen        8080;
+
+    access_log    /home/sites/logs/pareto_access.log;
+    error_log     /home/sites/logs/pareto_error.log;
+
+    root          /home/sites/pareto/;
+
+    location / {
+        uwsgi_pass unix:///var/tmp/pareto_uwsgi.sock;
+        include uwsgi_params;
+
+        # 8 -- число буфферов
+        # 128k -- размер буфера
+        # фактически, мы сможем передать от Django в nginx только 1 мб информации.
+        # играйтесь с этим значением при поднятии своего проекта
+        uwsgi_buffers 8 128k;
+    }
+}
+
+lua_package_path "/usr/local/lib/lua/?.lua;/home/sites/pareto/lua/?.lua;";
+lua_package_cpath "/usr/lib/x86_64-linux-gnu/lua/5.1/?.so;/usr/local/lib/lua/5.1/?.so";
+
+lua_shared_dict commands 10m;
+
+server {
+    listen      8888;
+    set $PATH_PRJ /home/sites/pareto;
+    error_log   /var/log/nginx/api_error_log;
+    access_log  /var/log/nginx/api_access_log;
+
+    location /api/ {
+        default_type application/json;
+        content_by_lua_file /home/sites/pareto/lua/est.lua ;
+        # lua_code_cache  off;
+    }
+
+}
