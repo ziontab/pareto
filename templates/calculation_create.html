@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="center span6">
+    <form enctype="multipart/form-data" method="POST" class="form-horizontal" action="">
+        {% csrf_token %}
+        {% for error in errors.values %}
+            <div class="alert alert-error">
+                {{ error }}
+            </div>
+        {% endfor %}
+        <fieldset>
+            <legend>Создание расчет</legend>
+            <div class="control-group {% if errors.name %}error{% endif %}">
+                <label class="control-label" for="Name">Название</label>
+                <div class="controls">
+                    <input type="text" name="name" id="Name" placeholder="Название" value="{{ data.name }}">
+                </div>
+            </div>
+            <div class="control-group {% if errors.algorithm_id %}error{% endif %}">
+                <label class="control-label" for="Algorithm">Алгоритм</label>
+                <div class="controls">
+                    <select multiple="multiple" name="algorithm_id">
+                        {% for algorithm in data.algorithms %}
+                            <option value="{{ algorithm.id }}">{{ algorithm.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="control-group {% if errors.problem_id %}error{% endif %}">
+                <label class="control-label" for="Problem">Тестовая задача</label>
+                <div class="controls">
+                    <select multiple="multiple" name="problem_id">
+                        {% for problem in data.problems %}
+                            <option value="{{ problem.id }}">{{ problem.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <button type="submit" class="btn btn-primary">Произвести расчет</button>
+                    <a class="btn" href="/project/{{ data.project.id }}/">Отмена</a>
+                </div>
+            </div>
+        </fieldset>
+    </form>
+</div>
+
+{% endblock %}

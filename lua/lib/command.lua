@@ -4,28 +4,32 @@ local http   = require "resty.http"
 local utils  = require "lib.utils"
 local config = require "lib.config"
 
-function get_from_api(self, key)
-    if key == "hv" then
-        return "ps aux | grep hv"
-    elseif key == "pvc" then
-        return "ps aux | grep pvc"
+function get_from_api(self, type, key)
+    if type == "calculation" then
+        return "ps aux | grep calculation"
+    elseif type == "estimation" then
+        if key == "hv" then
+            return "ps aux | grep hv"
+        elseif key == "pvc" then
+            return "ps aux | grep pvc"
+        end
     end
     return
 end
 
 
-function get(self, raw_key)
+function get(self, type, raw_key)
     local key  = raw_key or ''
     local dict = ngx.shared.commands
-    local name = dict:get(key)
+    local name = dict:get(type .. ":" .. key)
     if not name then
-        name = self:get_from_api(key)
+        name = self:get_from_api(type, key)
         if name then
-            dict:set(key, name)
+            dict:set(type .. ":" .. key, name)
         end
     end
     if not name then
-        ngx.log(ngx.WARN, "No criteria: ", key)
+        ngx.log(ngx.ERR, "No criteria: ", type, " ", key)
     end
     return name
 end
@@ -53,10 +57,11 @@ function execute(self, command, data, calc_id)
     return result, math.floor((time2 - time1) * 1000)
 end
 
-function set_result(self, calc_id, result, time)
+function set_result(self, type, id, result, time)
     local hc = http:new()
     local params = {
-        id     = calc_id,
+        type   = type,
+        id     = id,
         data   = result,
         status = "ok",
         time   = time,

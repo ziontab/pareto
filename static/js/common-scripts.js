@@ -129,10 +129,11 @@ $(document).ready(function() {
         $wait = $(".js-wait");
 
     function process () {
-        var $content   = $(".js-est-content"),
+        var $content   = $(".js-entity-content"),
             $container = $(".js-status"),
             status     = $container.data("status");
-            id         = $container.data("id");
+            id         = $container.data("id"),
+            type       = window.location.pathname.match(/\/(\w+)\//i);
 
         if (status == "ok") {
             $proc.hide();
@@ -153,7 +154,7 @@ $(document).ready(function() {
             window.setTimeout(function () {
                 $.ajax({
                     type: "GET",
-                    url: "/ajax/estimation/"+ id + "/",
+                    url: "/ajax/" + type[1] + "/"+ id + "/",
                     success: function(data) {
                         if (data) {
                             $content.empty().append(data);

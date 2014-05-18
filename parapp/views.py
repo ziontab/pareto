@@ -6,7 +6,7 @@ from django.contrib.auth import authenticate, login as auth_login, logout as aut
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from parapp.models import Project, Calculation, Estimation, Problem, Algorithm
+from parapp.models import Project, Calculation, Estimation, Analysis, Problem, Algorithm, Indicator
 from django.shortcuts import redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 
@@ -121,6 +121,8 @@ def get_project(request, project_id):
     project = get_object_or_404(Project, user=request.user, pk=project_id)
     data['project']      = project
     data['estimations']  = Estimation.objects.filter(project=project)
+    data['calculations'] = Calculation.objects.filter(project=project)
+    data['analyzes']     = Analysis.objects.filter(project=project)
     return TemplateResponse(request, 'project.html', {'errors': errors, 'data': data})
 
 per_page = 20
@@ -163,43 +165,47 @@ def create_estimation(request, project_id):
     data, errors = {}, {}
 
     project = get_object_or_404(Project, user=request.user, pk=project_id)
-    data['problems'] = Problem.objects.all()
+    data['project']    = project
+    data['indicators'] = Indicator.objects.all()
 
     if request.method == 'GET':
         return TemplateResponse(request, 'estimation_create.html', {'errors': errors, 'data': data})
 
-    name         = request.POST.get('name', 0)
-    problem_id   = request.POST.get('problem', 0)
-    problem_type = request.POST.get('type', 0)
-    input_data1  = request.FILES.get('input_data1', 0)
-    input_data2  = request.FILES.get('input_data2', 0)
+    name           = request.POST.get('name', 0)
+    indicator_id   = request.POST.get('indicator', 0)
+    indicator_type = request.POST.get('type', 0)
+    input_data1    = request.FILES.get('input_data1', 0)
+    input_data2    = request.FILES.get('input_data2', 0)
 
     if not name:
         errors['name'] = 'Имя оценки не введено'
     elif not input_data1:
         errors['input_data1'] = 'Входной файл не загружен'
-    elif not input_data2:
+    elif indicator_type == '2' and not input_data2:
         errors['input_data2'] = 'Входной файл не загружен'
 
-    if not problem_id:
-        errors['problem'] = 'Метод оценки не выбран'
+    if not indicator_id:
+        errors['indicator'] = 'Метод оценки не выбран'
     else:
-        problem = get_object_or_404(Problem, pk=problem_id)
+        indicator = get_object_or_404(Indicator, pk=indicator_id)
 
     if errors.keys():
         data['name'] = name
-        data['type'] = problem_type
+        data['type'] = indicator_type
         return TemplateResponse(request, 'estimation_create.html', {'errors': errors, 'data': data})
 
+    files_data = {}
     input_data1.seek(0)
-    input_data2.seek(0)
-    data1 = input_data1.read()
-    data2 = input_data2.read()
-    input_data = json.dumps({'file1': data1, 'file2': data2})
-    new_est = Estimation(name=name, time='0', project=project, problem=problem,
+    files_data["file1"] = input_data1.read()
+    if indicator_type == '2':
+        input_data2.seek(0)
+        files_data["file2"]  = input_data2.read()
+    input_data = json.dumps(files_data)
+    new_est = Estimation(name=name, time='0', project=project, indicator=indicator,
         status='wait', input_data=input_data, output_data='')
     new_est.save()
-    api_response = api_req({'id': new_est.id, 'data': input_data, 'name': problem.name}, {})
+    api_response = api_req({'type': 'estimation', 'id': new_est.id,
+        'data': input_data, 'name': indicator.value}, {})
     if api_response and api_response['status'] == 'ok':
         new_est.status = 'proc'
         new_est.save()
@@ -215,6 +221,63 @@ def get_estimation(request, estimation_id):
         return TemplateResponse(request, 'inc/estimation.html', {'errors': errors, 'data': data})
     return TemplateResponse(request, 'estimation.html', {'errors': errors, 'data': data})
 
+@login_required
+def create_calculation(request, project_id):
+    data, errors = {}, {}
+
+    project = get_object_or_404(Project, user=request.user, pk=project_id)
+    data['project']    = project
+    data['problems']   = Problem.objects.all()
+    data['algorithms'] = Algorithm.objects.all()
+
+    if request.method == 'GET':
+        return TemplateResponse(request, 'calculation_create.html',
+            {'errors': errors, 'data': data})
+
+    name         = request.POST.get('name', 0)
+    problem_id   = request.POST.get('problem_id', 0)
+    algorithm_id = request.POST.get('algorithm_id', 0)
+
+    if not name:
+        errors['name'] = 'Имя оценки не введено'
+
+    if not problem_id:
+        errors['problem_id'] = 'Тестовая задача не выбрана'
+    else:
+        problem = get_object_or_404(Problem, pk=problem_id)
+
+    if not algorithm_id:
+        errors['algorithm_id'] = 'Алгоритм не выбран'
+    else:
+        algorithm = get_object_or_404(Algorithm, pk=algorithm_id)
+
+    if errors.keys():
+        data['name'] = name
+        return TemplateResponse(request, 'calculation_create.html',
+            {'errors': errors, 'data': data})
+
+    new_calc = Calculation(name=name, time='0', project=project, problem=problem,
+        algorithm=algorithm, status='wait', input_data='', output_data='')
+    new_calc.save()
+    api_response = api_req({'type': 'calculation', 'id': new_calc.id,
+        'name_algorithm': algorithm.value, 'name_problem': problem.value}, {})
+    if api_response and api_response['status'] == 'ok':
+        new_calc.status = 'proc'
+        new_calc.save()
+    return redirect('/calculation/' + str(new_calc.id) + '/')
+
+@login_required
+def get_calculation(request, calculation_id):
+    data, errors = {}, {}
+    calculation = get_object_or_404(Calculation, pk=calculation_id)
+    project     = get_object_or_404(Project, pk=calculation.project_id, user=request.user)
+    data['calculation'] = calculation
+    data['algorithm']   = get_object_or_404(Algorithm, pk=calculation.algorithm.id)
+    data['problem']     = get_object_or_404(Problem,   pk=calculation.problem.id)
+    if request.is_ajax():
+        return TemplateResponse(request, 'inc/calculation.html', {'errors': errors, 'data': data})
+    return TemplateResponse(request, 'calculation.html', {'errors': errors, 'data': data})
+
 def api_req(params, cookies):
     url  = 'http://127.0.0.1:8888/api/'
     try:
@@ -227,22 +290,36 @@ def api_req(params, cookies):
         return False
     return json.loads(resp.text)
 
-
 @csrf_exempt
 def api_back(request):
     data, errors = {}, {}
     e_id   = request.POST.get('id',     0)
     data   = request.POST.get('data',   '')
+    type   = request.POST.get('type',   '')
     status = request.POST.get('status', 'fail')
     time   = request.POST.get('time',   0)
 
-    estimation = get_object_or_404(Estimation, pk=e_id)
-    estimation.status      = status
-    estimation.output_data = data
-    estimation.time        = time
-    estimation.save()
+    if type == "estimation":
+        entity = get_object_or_404(Estimation, pk=e_id)
+    elif type == "calculation":
+        entity = get_object_or_404(Calculation, pk=e_id)
+    elif type == "analysis":
+        entity = get_object_or_404(Analysis, pk=e_id)
+    else:
+        HttpResponse(json.dumps({'status': 'fail'}), content_type="application/json")
+
+    entity.status      = status
+    entity.output_data = data
+    entity.time        = time
+    entity.save()
     return HttpResponse(json.dumps({'status': 'ok'}), content_type="application/json")
 
 @csrf_exempt
 def stub(request):
     return HttpResponse(json.dumps({'status': 'ok'}), content_type="application/json")
+
+def get_analysis(request, calculation_id):
+    pass
+
+def create_analysis(request, calculation_id):
+    pass

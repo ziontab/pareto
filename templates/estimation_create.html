@@ -30,12 +30,12 @@
                     </label>
                 </div>
             </div>
-            <div class="control-group {% if errors.problem %}error{% endif %}">
-                <label class="control-label" for="Problem">Метод оценки</label>
+            <div class="control-group {% if errors.indicator %}error{% endif %}">
+                <label class="control-label" for="Indicator">Метод оценки</label>
                 <div class="controls">
-                    <select name="problem">
-                        {% for problem in data.problems %}
-                            <option class="{% if problem.is_binary %}binary{% else %}unary{% endif %}" value="{{ problem.id }}">{{ problem.name }}</option>
+                    <select name="indicator">
+                        {% for indicator in data.indicators %}
+                            <option class="{% if indicator.is_binary %}binary{% else %}unary{% endif %}" value="{{ indicator.id }}">{{ indicator.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -90,6 +90,7 @@
             <div class="control-group">
                 <div class="controls">
                     <button type="submit" class="btn btn-primary">Произвести оценку</button>
+                    <a class="btn" href="/project/{{ data.project.id }}/">Отмена</a>
                 </div>
             </div>
         </fieldset>
@@ -108,12 +109,14 @@
             if($("input[name='type']:checked").val() == 1) {
                 $("option.binary").remove();
                 $("option.unary").remove();
-                $("select[name='problem']").append($unary);
+                $("select[name='indicator']").append($unary);
+                $('#calc_upload_2').hide();
             }
             else {
                 $("option.binary").remove();
                 $("option.unary").remove();
-                $("select[name='problem']").append($binary);
+                $("select[name='indicator']").append($binary);
+                $('#calc_upload_2').show();
             }
         });
         $("input[value='1']").trigger('click');

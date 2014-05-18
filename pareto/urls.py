@@ -24,6 +24,16 @@ urlpatterns = patterns('',
     url(r'^estimation/create/(?P<project_id>\d+)/$',  'parapp.views.create_estimation'),
     url(r'^ajax/estimation/(?P<estimation_id>\d+)/$', 'parapp.views.get_estimation'),
 
+    # Calculations
+    url(r'^calculation/(?P<calculation_id>\d+)/$',     'parapp.views.get_calculation'),
+    url(r'^calculation/create/(?P<project_id>\d+)/$',  'parapp.views.create_calculation'),
+    url(r'^ajax/calculation/(?P<calculation_id>\d+)/$', 'parapp.views.get_calculation'),
+
+    # Analyzes
+    url(r'^analysis/(?P<analysis_id>\d+)/$',     'parapp.views.get_analysis'),
+    url(r'^analysis/create/(?P<project_id>\d+)/$',  'parapp.views.create_analysis'),
+    url(r'^ajax/analysis/(?P<analysis_id>\d+)/$', 'parapp.views.get_analysis'),
+
     # API
     url(r'^api_back/$', 'parapp.views.api_back'),
     url(r'^new_calc/$', 'parapp.views.stub'),

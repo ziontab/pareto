@@ -1,1 +1,23 @@
-{{ data }}
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Расчет {{ data.calculation.name }}</h2>
+
+<div class="info">
+    <div class="js-proc alert" style="display:none;">
+        <strong>Подождите, производится расчет</strong> <img class="loader" src="{{ STATIC_URL }}img/ajax-loader.gif">
+    </div>
+    <div class="js-ok alert alert-success" style="display:none;">
+        <strong>Расчет успешно выполнен</strong>
+    </div>
+
+    <div class="js-wait alert alert-info" style="display:none;">
+        Расчет не выполнялся <strong><a class="js-start-calc" href="">запустить расчет</a></strong>
+    </div>
+</div>
+
+<div class="js-entity-content">
+    {% include "inc/calculation.html" %}
+</div>
+
+{% endblock %}
