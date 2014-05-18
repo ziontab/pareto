@@ -306,7 +306,7 @@ def api_back(request):
     elif type == "analysis":
         entity = get_object_or_404(Analysis, pk=e_id)
     else:
-        HttpResponse(json.dumps({'status': 'fail'}), content_type="application/json")
+        return HttpResponse(json.dumps({'status': 'fail'}), content_type="application/json")
 
     entity.status      = status
     entity.output_data = data
