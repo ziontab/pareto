@@ -1,0 +1,47 @@
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Название поля</th>
+            <th>Значение поля</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Название</td>
+            <td>{{ data.analysis.name }}</td>
+        </tr>
+    </tbody>
+    <tbody>
+        <tr>
+            <td>Дата</td>
+            <td>{{ data.analysis.date | date:'d-m-Y G:i:s' }}</td>
+        </tr>
+    </tbody>
+    <tbody>
+        <tr>
+            <td>Время вычислений</td>
+            <td>{{ data.analysis.time }}</td>
+        </tr>
+    </tbody>
+    <tbody>
+        <tr>
+            <td>Алгоритм</td>
+            <td>{{ data.algorithm.name }}</td>
+        </tr>
+    </tbody>
+    <tbody>
+        <tr>
+            <td>Тестовая задача</td>
+            <td>{{ data.problem.name }}</td>
+        </tr>
+    </tbody>
+    <tbody>
+        <tr>
+            <td>Выходные данные</td>
+            <td>{{ data.analysis.output_data }}</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="js-status" data-status="{{ data.analysis.status }}" data-id="{{ data.analysis.id }}"></div>

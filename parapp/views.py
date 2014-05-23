@@ -204,11 +204,7 @@ def create_estimation(request, project_id):
     new_est = Estimation(name=name, time='0', project=project, indicator=indicator,
         status='wait', input_data=input_data, output_data='')
     new_est.save()
-    api_response = api_req({'type': 'estimation', 'id': new_est.id,
-        'data': input_data, 'name': indicator.value}, {})
-    if api_response and api_response['status'] == 'ok':
-        new_est.status = 'proc'
-        new_est.save()
+    start_request(request.user, new_est.id, Estimation)
     return redirect('/estimation/' + str(new_est.id) + '/')
 
 @login_required
@@ -259,11 +255,7 @@ def create_calculation(request, project_id):
     new_calc = Calculation(name=name, time='0', project=project, problem=problem,
         algorithm=algorithm, status='wait', input_data='', output_data='')
     new_calc.save()
-    api_response = api_req({'type': 'calculation', 'id': new_calc.id,
-        'name_algorithm': algorithm.value, 'name_problem': problem.value}, {})
-    if api_response and api_response['status'] == 'ok':
-        new_calc.status = 'proc'
-        new_calc.save()
+    start_request(request.user, new_calc.id, Calculation)
     return redirect('/calculation/' + str(new_calc.id) + '/')
 
 @login_required
@@ -318,8 +310,52 @@ def api_back(request):
 def stub(request):
     return HttpResponse(json.dumps({'status': 'ok'}), content_type="application/json")
 
+@login_required
 def get_analysis(request, calculation_id):
-    pass
+    data, errors = {}, {}
+    calculation = get_object_or_404(Analysis, pk=calculation_id)
+    project     = get_object_or_404(Project, pk=calculation.project_id, user=request.user)
+    data['analysis']  = calculation
+    data['algorithm'] = get_object_or_404(Algorithm, pk=calculation.algorithm.id)
+    data['problem']   = get_object_or_404(Problem,   pk=calculation.problem.id)
+    if request.is_ajax():
+        return TemplateResponse(request, 'inc/analysis.html', {'errors': errors, 'data': data})
+    return TemplateResponse(request, 'analysis.html', {'errors': errors, 'data': data})
 
+@login_required
 def create_analysis(request, calculation_id):
     pass
+
+@login_required
+def delete_entity(request, id, entity):
+    ent     = get_object_or_404(entity, pk=id)
+    project = get_object_or_404(Project, user=request.user, pk=ent.project_id)
+    ent.delete()
+    return HttpResponse(json.dumps({'status': 'ok'}), content_type="application/json")
+
+@login_required
+def start_entity(request, id, entity):
+    if start_request(request.user, id, entity):
+        return HttpResponse(json.dumps({'status': 'ok'}), content_type="application/json")
+    return HttpResponse(json.dumps({'status': 'fail'}), content_type="application/json")
+
+def start_request(user, id, entity):
+    ent     = get_object_or_404(entity, pk=id)
+    project = get_object_or_404(Project, user=user, pk=ent.project_id)
+    type = entity.__name__.lower()
+    params = {'type': type, 'id': id }
+    if type == "calculation":
+        algorithm = get_object_or_404(Algorithm, pk=ent.algorithm_id)
+        problem   = get_object_or_404(Problem, pk=ent.problem_id)
+        params['name_algorithm'] = algorithm.value
+        params['name_problem']   = problem.value
+    elif type == "calculation":
+        indicator = get_object_or_404(Indicator, pk=ent.indicator_id)
+        params['data'] = ent.input_data
+        params['name'] = indicator.value
+    api_response = api_req(params, {})
+    if api_response and api_response['status'] == 'ok':
+        ent.status = 'proc'
+        ent.save()
+        return True
+    return

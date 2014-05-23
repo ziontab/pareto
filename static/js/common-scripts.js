@@ -47,6 +47,23 @@ $(document).ready(function() {
         return false;
     });
 
+    $(".js-ent-delete").on('click', function(){
+        $elem = $(this);
+        $.ajax({
+            type: "GET",
+            url: $elem.data('url'),
+            success: function(data) {
+                if(data && data.status == 'ok') {
+                   $elem.closest('tr').remove();
+                }
+                else {
+                    $elem.closest('tr').addClass("error");
+                }
+           }
+         });
+        return false;
+    });
+
     $(".js-pr-edit").on('click', function(){
         $btn  = $(this);
         $form = $('form#edit_form');
@@ -162,7 +179,7 @@ $(document).ready(function() {
                         }
                    }
                 })
-            }, 10000);
+            }, 5000);
         }
         else if (status == "fail") {
             // show restart btn
@@ -170,16 +187,15 @@ $(document).ready(function() {
     };
     process();
 
-    $(".js-start-est").on('click', function(){
-        $container = $(".js-status"),
-        id         = $container.data("id");
-
+    $(".js-start-entity").on('click', function(){
+        $btn = $(this);
         $.ajax({
-            type: "POST",
-            url: "/ajax/estimation_start/" + id + "/",
+            type: "GET",
+            url: $btn.data("url"),
             success: function(data) {
                 if (data && data.status == "ok") {
-                    process()
+                    $(".js-status").data("status", "proc");
+                    process();
                 }
            }
         });

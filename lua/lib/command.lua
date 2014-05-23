@@ -3,10 +3,18 @@ module('lib.command', package.seeall)
 local http   = require "resty.http"
 local utils  = require "lib.utils"
 local config = require "lib.config"
+local cjson  = require "cjson"
 
 function get_from_api(self, type, key)
     if type == "calculation" then
-        return "ps aux | grep calculation"
+        if config.is_test_server then
+            return "ps aux | grep calculation"
+        else
+            local id, algorithm, problem = string.match (key, "^(%d+):(%w+):(%w+)$")
+            return "/root/i.shibitov/distribution/distribution_final -t "
+            .. problem .. " -a " .. algorithm .. " -f /tmp/front_"
+            .. id .. ".txt -i /tmp/indicators_" .. id .. ".txt"
+        end
     elseif type == "estimation" then
         if key == "hv" then
             return "ps aux | grep hv"
@@ -41,19 +49,32 @@ end
 
 function _read_from(file)
     local f = io.open(file, "rb")
+    if not f then
+        ngx.log(ngx.ERR, "failed to open file: ", file)
+        return ""
+    end
     local content = f:read("*all")
     f:close()
     return content
 end
 
-function execute(self, command, data, calc_id)
-    local cmd = self:prepare(command, data, calc_id)
-    local file = "/tmp/result_" .. calc_id
+function execute(self, command, type, id, data)
+    local cmd = self:prepare(command, type, id)
+    local file = "/tmp/result_" .. id
     local time1 = os.clock()
     os.execute("sleep 4")
     os.execute(cmd .. " > " .. file)
     local time2 = os.clock()
-    local result = _read_from(file)
+    local result
+    if type == "calculation" then
+        tmp = {}
+        tmp["output"]    = _read_from(file)
+        tmp["front"]     = _read_from("/tmp/front_" .. id)
+        tmp["indicator"] = _read_from("/tmp/indicators_" .. id)
+        result = cjson.encode(tmp)
+    else
+        result = _read_from(file)
+    end
     return result, math.floor((time2 - time1) * 1000)
 end
 

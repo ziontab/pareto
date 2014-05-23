@@ -24,6 +24,7 @@
                         <td>{{ forloop.counter }}</td>
                         <td><a href="/calculation/{{ calculation.id }}/">{{ calculation.name }}</a></td>
                         <td>{{ calculation.date | date:'d-m-Y G:i:s' }}</td>
+                        <td><a href="#" data-url="/ajax/calculation/delete/{{ calculation.id }}/" class="btn js-ent-delete">Удалить</a></td>
                     </tr>
                 {% endfor %}
                 </tbody>
@@ -45,6 +46,7 @@
                         <td>{{ forloop.counter }}</td>
                         <td><a href="/estimation/{{ estimation.id }}/">{{ estimation.name }}</a></td>
                         <td>{{ estimation.date | date:'d-m-Y G:i:s' }}</td>
+                        <td><a href="#" data-url="/ajax/estimation/delete/{{ estimation.id }}/" class="btn js-ent-delete">Удалить</a></td>
                     </tr>
                 {% endfor %}
                 </tbody>
@@ -66,6 +68,7 @@
                         <td>{{ forloop.counter }}</td>
                         <td><a href="/analysis/{{ analysis.id }}/">{{ analysis.name }}</a></td>
                         <td>{{ analysis.date | date:'d-m-Y G:i:s' }}</td>
+                        <td><a href="#" data-url="/ajax/analysis/delete/{{ analysis.id }}/" class="btn js-ent-delete">Удалить</a></td>
                     </tr>
                 {% endfor %}
                 </tbody>

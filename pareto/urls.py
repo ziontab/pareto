@@ -1,5 +1,6 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
+from parapp.models import Project, Calculation, Estimation, Analysis, Problem, Algorithm, Indicator
 
 admin.autodiscover()
 
@@ -23,16 +24,22 @@ urlpatterns = patterns('',
     url(r'^estimation/(?P<estimation_id>\d+)/$',      'parapp.views.get_estimation'),
     url(r'^estimation/create/(?P<project_id>\d+)/$',  'parapp.views.create_estimation'),
     url(r'^ajax/estimation/(?P<estimation_id>\d+)/$', 'parapp.views.get_estimation'),
+    url(r'^ajax/estimation/delete/(?P<id>\d+)/$',     'parapp.views.delete_entity', {"entity" : Estimation}),
+    url(r'^ajax/estimation/start/(?P<id>\d+)/$',      'parapp.views.start_entity', {"entity" : Estimation}),
 
     # Calculations
-    url(r'^calculation/(?P<calculation_id>\d+)/$',     'parapp.views.get_calculation'),
-    url(r'^calculation/create/(?P<project_id>\d+)/$',  'parapp.views.create_calculation'),
+    url(r'^calculation/(?P<calculation_id>\d+)/$',      'parapp.views.get_calculation'),
+    url(r'^calculation/create/(?P<project_id>\d+)/$',   'parapp.views.create_calculation'),
     url(r'^ajax/calculation/(?P<calculation_id>\d+)/$', 'parapp.views.get_calculation'),
+    url(r'^ajax/calculation/delete/(?P<id>\d+)/$',      'parapp.views.delete_entity', {"entity" : Calculation}),
+    url(r'^ajax/calculation/start/(?P<id>\d+)/$',       'parapp.views.start_entity', {"entity" : Calculation}),
 
     # Analyzes
-    url(r'^analysis/(?P<analysis_id>\d+)/$',     'parapp.views.get_analysis'),
-    url(r'^analysis/create/(?P<project_id>\d+)/$',  'parapp.views.create_analysis'),
-    url(r'^ajax/analysis/(?P<analysis_id>\d+)/$', 'parapp.views.get_analysis'),
+    url(r'^analysis/(?P<analysis_id>\d+)/$',       'parapp.views.get_analysis'),
+    url(r'^analysis/create/(?P<project_id>\d+)/$', 'parapp.views.create_analysis'),
+    url(r'^ajax/analysis/(?P<analysis_id>\d+)/$',  'parapp.views.get_analysis'),
+    url(r'^ajax/analysis/delete/(?P<id>\d+)/$',    'parapp.views.delete_entity', {"entity" : Analysis}),
+    url(r'^ajax/analysis/start/(?P<id>\d+)/$',    'parapp.views.start_entity', {"entity" : Analysis}),
 
     # API
     url(r'^api_back/$', 'parapp.views.api_back'),

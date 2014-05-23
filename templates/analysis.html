@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Оценка {{ data.estimation.name }}</h2>
+<h2>Анализ {{ data.analysis.name }}</h2>
 
 <div class="info">
     <div class="js-proc alert" style="display:none;">
@@ -12,12 +12,12 @@
     </div>
 
     <div class="js-wait alert alert-info" style="display:none;">
-        Расчет не выполнялся <strong><a class="js-start-entity" data-url="/ajax/estimation/start/{{ data.estimation.id }}/" href="">запустить расчет</a></strong>
+        Расчет не выполнялся <strong><a class="js-start-entity" data-url="/ajax/analysis/start/{{ data.analysis.id }}/" href="">запустить расчет</a></strong>
     </div>
 </div>
 
 <div class="js-entity-content">
-    {% include "inc/estimation.html" %}
+    {% include "inc/analysis.html" %}
 </div>
 
 {% endblock %}

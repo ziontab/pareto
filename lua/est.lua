@@ -26,6 +26,14 @@ function validate_params_calc()
         api:error_handle(2, "invalid id")
         return 1
     end
+    if not args["name_algorithm"] then
+        api:error_handle(7, "invalid algorithm")
+        return 1
+    end
+    if not args["name_problem"] then
+        api:error_handle(8, "invalid problem")
+        return 1
+    end
 end
 
 function validate_params_anal()
@@ -52,6 +60,7 @@ if args["type"] == "calculation" then
     if validate_params_calc() then
         return
     end
+    args["name"] = args["id"] .. ":" .. args["name_algorithm"] .. ":" .. args["name_problem"]
 elseif args["type"] == "estimation" then
     if validate_params_est() then
         return
@@ -68,7 +77,7 @@ end
 api:response_ok()
 
 local function timer_handler(premature, type, name, data, id)
-    local result, time = cmd:execute(cmd:get(type, name), data, id)
+    local result, time = cmd:execute(cmd:get(type, name), type, id, data)
     cmd:set_result(type, id, result, time)
 end
 
