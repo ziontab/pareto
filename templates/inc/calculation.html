@@ -38,8 +38,32 @@
     </tbody>
     <tbody>
         <tr>
-            <td>Выходные данные</td>
-            <td>{{ data.calculation.output_data }}</td>
+            <td>Фронт</td>
+            <td>
+            {% for row in data.output_data.front %}
+                {{ row }} <br/>
+            {% endfor %}
+            </td>
+        </tr>
+    </tbody>
+    <tbody>
+        <tr>
+            <td>Индикаторы</td>
+            <td>
+            {% for row in data.output_data.indicator %}
+                {{ row }} <br/>
+            {% endfor %}
+            </td>
+        </tr>
+    </tbody>
+    <tbody>
+        <tr>
+            <td>Вывод</td>
+            <td>
+            {% for row in data.output_data.output %}
+                {{ row }} <br/>
+            {% endfor %}
+            </td>
         </tr>
     </tbody>
 </table>

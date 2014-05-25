@@ -264,6 +264,11 @@ def get_calculation(request, calculation_id):
     calculation = get_object_or_404(Calculation, pk=calculation_id)
     project     = get_object_or_404(Project, pk=calculation.project_id, user=request.user)
     data['calculation'] = calculation
+    if calculation.output_data:
+        data['output_data'] = json.loads(calculation.output_data)
+        data['output_data']['front']     = data['output_data']['front'].split("\n")
+        data['output_data']['output']    = data['output_data']['output'].split("\n")
+        data['output_data']['indicator'] = data['output_data']['indicator'].split("\n")
     data['algorithm']   = get_object_or_404(Algorithm, pk=calculation.algorithm.id)
     data['problem']     = get_object_or_404(Problem,   pk=calculation.problem.id)
     if request.is_ajax():
