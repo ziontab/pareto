@@ -71,8 +71,8 @@ function execute(self, command, type, id, data)
     if type == "calculation" then
         tmp = {}
         tmp["output"]    = _read_from(file)
-        tmp["front"]     = _read_from("/tmp/front_" .. id)
-        tmp["indicator"] = _read_from("/tmp/indicators_" .. id)
+        tmp["front"]     = _read_from("/tmp/front_" .. id .. ".txt")
+        tmp["indicator"] = _read_from("/tmp/indicators_" .. id .. ".txt")
         result = cjson.encode(tmp)
     else
         result = _read_from(file)
