@@ -11,7 +11,7 @@ function get_from_api(self, type, key)
             return "ps aux | grep calculation"
         else
             local id, algorithm, problem = string.match (key, "^(%d+):(%w+):(%w+)$")
-            return "/root/i.shibitov/distribution/distribution_final -t "
+            return "/home/distribution/distribution_final/run_calculate.sh -t "
             .. problem .. " -a " .. algorithm .. " -f /tmp/front_"
             .. id .. ".txt -i /tmp/indicators_" .. id .. ".txt"
         end
