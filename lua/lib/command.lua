@@ -11,8 +11,8 @@ function get_from_api(self, type, key)
             return "ps aux | grep calculation"
         else
             local id, algorithm, problem = string.match (key, "^(%d+):(%w+):(%w+)$")
-            return "/home/distribution/distribution_final/run_calculate.sh -t "
-            .. problem .. " -a " .. algorithm .. " -f /tmp/front_"
+            return '/home/distribution/distribution_final/run_calculate.sh -t "'
+            .. problem .. '" -a "' .. algorithm .. '" -f /tmp/front_'
             .. id .. ".txt -i /tmp/indicators_" .. id .. ".txt"
         end
     elseif type == "estimation" then
@@ -39,6 +39,8 @@ function get(self, type, raw_key)
     if not name then
         ngx.log(ngx.ERR, "No criteria: ", type, " ", key)
     end
+    ngx.log(ngx.ERR, "Command: ", name)
+
     return name
 end
 

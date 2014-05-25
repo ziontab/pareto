@@ -22,13 +22,8 @@ server {
     root          /home/sites/pareto/;
 
     location / {
-        uwsgi_pass unix:///var/tmp/pareto_uwsgi.sock;
         include uwsgi_params;
-
-        # 8 -- число буфферов
-        # 128k -- размер буфера
-        # фактически, мы сможем передать от Django в nginx только 1 мб информации.
-        # играйтесь с этим значением при поднятии своего проекта
+        uwsgi_pass unix:/var/tmp/pareto_uwsgi.sock;
         uwsgi_buffers 8 128k;
     }
 }
