@@ -39,7 +39,11 @@
     <tbody>
         <tr>
             <td>Выходные данные</td>
-            <td>{{ data.output_data.data }}</td>
+            <td>
+            {% for row in data.output_data.data %}
+                {{ row }} <br/>
+            {% endfor %}
+            </td>
         </tr>
     </tbody>
 </table>
