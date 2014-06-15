@@ -316,20 +316,60 @@ def stub(request):
     return HttpResponse(json.dumps({'status': 'ok'}), content_type="application/json")
 
 @login_required
-def get_analysis(request, calculation_id):
+def get_analysis(request, analysis_id):
     data, errors = {}, {}
-    calculation = get_object_or_404(Analysis, pk=calculation_id)
-    project     = get_object_or_404(Project, pk=calculation.project_id, user=request.user)
-    data['analysis']  = calculation
-    data['algorithm'] = get_object_or_404(Algorithm, pk=calculation.algorithm.id)
-    data['problem']   = get_object_or_404(Problem,   pk=calculation.problem.id)
+    analysis = get_object_or_404(Analysis, pk=analysis_id)
+    project  = get_object_or_404(Project, pk=analysis.project_id, user=request.user)
+    data['analysis']  = analysis
+    data['algorithm'] = analysis.algorithms
+    data['problem']   = analysis.problems
+    if analysis.output_data:
+        data['output_data'] = json.loads(analysis.output_data)
+        data['output_data']['data'] = data['output_data']['data'].split("\n")
     if request.is_ajax():
         return TemplateResponse(request, 'inc/analysis.html', {'errors': errors, 'data': data})
     return TemplateResponse(request, 'analysis.html', {'errors': errors, 'data': data})
 
 @login_required
-def create_analysis(request, calculation_id):
-    pass
+def create_analysis(request, project_id):
+    data, errors = {}, {}
+
+    project = get_object_or_404(Project, user=request.user, pk=project_id)
+    data['project']    = project
+    data['problems']   = Problem.objects.all()
+    data['algorithms'] = Algorithm.objects.all()
+
+    if request.method == 'GET':
+        return TemplateResponse(request, 'calculation_create.html',
+            {'errors': errors, 'data': data})
+
+    name         = request.POST.get('name', 0)
+    problem_id   = request.POST.get('problem_id', 0)
+    algorithm_id = request.POST.get('algorithm_id', 0)
+
+    if not name:
+        errors['name'] = 'Имя оценки не введено'
+
+    if not problem_id:
+        errors['problem_id'] = 'Тестовая задача не выбрана'
+    else:
+        problem = get_object_or_404(Problem, pk=problem_id)
+
+    if not algorithm_id:
+        errors['algorithm_id'] = 'Алгоритм не выбран'
+    else:
+        algorithm = get_object_or_404(Algorithm, pk=algorithm_id)
+
+    if errors.keys():
+        data['name'] = name
+        return TemplateResponse(request, 'analys_create.html',
+            {'errors': errors, 'data': data})
+
+    new_anal = Analysis(name=name, time='0', project=project, problems=problem.value,
+        algorithms=algorithm.value, status='wait', input_data='', output_data='')
+    new_anal.save()
+    start_request(request.user, new_anal.id, Analysis)
+    return redirect('/analysis/' + str(new_anal.id) + '/')
 
 @login_required
 def delete_entity(request, id, entity):
@@ -354,10 +394,13 @@ def start_request(user, id, entity):
         problem   = get_object_or_404(Problem, pk=ent.problem_id)
         params['name_algorithm'] = algorithm.value
         params['name_problem']   = problem.value
-    elif type == "calculation":
+    elif type == "estimantion":
         indicator = get_object_or_404(Indicator, pk=ent.indicator_id)
         params['data'] = ent.input_data
         params['name'] = indicator.value
+    elif type == "analysis":
+        params['name_algorithm'] = ent.algorithms
+        params['name_problem']   = ent.problems
     api_response = api_req(params, {})
     if api_response and api_response['status'] == 'ok':
         ent.status = 'proc'

@@ -69,6 +69,7 @@ elseif args["type"] == "analysis" then
     if validate_params_anal() then
         return
     end
+    args["name"] = args["id"] .. ":" .. args["name_algorithm"] .. ":" .. args["name_problem"]
 else
     api:error_handle(7, "invalid type")
     return

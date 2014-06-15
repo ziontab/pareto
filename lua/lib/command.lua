@@ -21,6 +21,14 @@ function get_from_api(self, type, key)
         elseif key == "pvc" then
             return "ps aux | grep pvc"
         end
+    elseif type == "analysis" then
+        if config.is_test_server then
+            return "ps aux | grep analysis"
+        else
+            local id, algorithm, problem = string.match (key, "^(%d+):(%w+):(%w+)$")
+            return '/home/distribution/distribution_final/run_test.sh -t "'
+            .. problem .. '" -a "' .. algorithm .. '" -r /tmp/anal_"' .. id .. ".txt"
+        end
     end
     return
 end
@@ -73,6 +81,11 @@ function execute(self, command, type, id, data)
         tmp["output"]    = _read_from(file)
         tmp["front"]     = _read_from("/tmp/front_" .. id .. ".txt")
         tmp["indicator"] = _read_from("/tmp/indicators_" .. id .. ".txt")
+        result = cjson.encode(tmp)
+    elseif type == "analysis" then
+        tmp = {}
+        tmp["output"] = _read_from(file)
+        tmp["data"]   = _read_from("/tmp/anal_" .. id .. ".txt")
         result = cjson.encode(tmp)
     else
         result = _read_from(file)
