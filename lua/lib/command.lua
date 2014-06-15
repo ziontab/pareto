@@ -27,7 +27,7 @@ function get_from_api(self, type, key)
         else
             local id, algorithm, problem = string.match (key, "^(%d+):(%w+):(%w+)$")
             return '/home/distribution/distribution_final/run_test.sh -t "'
-            .. problem .. '" -a "' .. algorithm .. '" -r /tmp/anal_"' .. id .. ".txt"
+            .. problem .. '" -a "' .. algorithm .. '" -r /tmp/anal_' .. id .. '.txt'
         end
     end
     return
